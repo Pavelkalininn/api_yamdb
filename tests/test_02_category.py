@@ -3,6 +3,7 @@ import pytest
 from .common import auth_client, create_categories, create_users_api
 
 
+@pytest.mark.category
 class Test02CategoryAPI:
 
     @pytest.mark.django_db(transaction=True)

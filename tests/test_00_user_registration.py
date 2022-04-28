@@ -1,10 +1,12 @@
-import pytest
 from django.contrib.auth import get_user_model
 from django.core import mail
+
+import pytest
 
 User = get_user_model()
 
 
+@pytest.mark.auth
 class Test00UserRegistration:
     url_signup = '/api/v1/auth/signup/'
     url_token = '/api/v1/auth/token/'
