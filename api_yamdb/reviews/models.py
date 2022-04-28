@@ -53,19 +53,13 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    genre_id = models.ForeignKey(
-        Genre,
-
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='genre_title',
-    )
     title_id = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='genre_title',
+        related_name='genre',
         verbose_name='Айди произведения'
     )
-
-    class Meta:
-        ordering = ['-genre_id']
+    genre_id = models.ManyToManyField(
+        Genre,
+        related_name='title',
+    )

@@ -15,20 +15,19 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
 
-    def validate_year(self, data):
-        if (1000 > data['year']
-                or data['year'] > datetime.datetime.now().year.__str__()):
-            raise serializers.ValidationError(
-                'Неорректно введен год')
-        return data
+    def validate_year(self, year):
+        if (1000 > year
+                or year > datetime.datetime.now().year):
+            raise serializers.ValidationError('Неорректно введен год')
+        return year
 
     class Meta:
-        fields = '__all__'
+        fields = ['name', 'year', 'category', 'genre_id__title_id__name']
         model = Title
         validators = [
             UniqueTogetherValidator(
                 queryset=Title.objects.all(),
-                fields=('model', 'year')
+                fields=('name', 'year')
             )
         ]
 
