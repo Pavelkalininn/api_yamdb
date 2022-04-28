@@ -1,9 +1,11 @@
-import pytest
 from django.contrib.auth import get_user_model
+
+import pytest
 
 from .common import auth_client, create_users_api
 
 
+@pytest.mark.users
 class Test01UserAPI:
 
     @pytest.mark.django_db(transaction=True)

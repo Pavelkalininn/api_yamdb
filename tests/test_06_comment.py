@@ -3,6 +3,7 @@ import pytest
 from .common import auth_client, create_comments, create_reviews
 
 
+@pytest.mark.comment
 class Test06CommentAPI:
 
     @pytest.mark.django_db(transaction=True)
