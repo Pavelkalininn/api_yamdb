@@ -1,5 +1,6 @@
 import datetime
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Genre, Title, Category
@@ -24,20 +25,20 @@ class TitleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(required=True)
 
     def create(self, validated_data):
+        category_slug = validated_data.pop('category')
+        category = get_object_or_404(Category, slug=category_slug)
         if 'genre' not in self.initial_data:
-            title = Title.objects.create(**validated_data)
+            title = Title.objects.create(**validated_data, category=category)
             return title
         genres = validated_data.pop('genre')
-        category = validated_data.pop('category')
+        print(genres)
+
         title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, status = Genre.objects.get_or_create(
-                **genre)
+        for genre_slug in genres:
+            current_genre = get_object_or_404(Genre, slug=genre_slug)
             GenreTitle.objects.create(
-                genre_id=current_genre, title_id=title)
-        Category.objects.get_or_create(
-            **category
-        )
+                genre=current_genre, title=title)
+        title.save(category=category)
         return title
 
     def validate_year(self, year):
