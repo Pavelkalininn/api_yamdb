@@ -1,11 +1,17 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.auth.models import AbstractUser, Permission, Group
 
 ROLE_CHOICES = (
     'user',
     'moderator',
     'admin',
 )
+Group.objects.bulk_create([
+    Group('user'),
+    Group('moderator'),
+    Group('admin'),
+])
+# Добавить разрешения в группы
 
 
 class User(AbstractUser):
@@ -51,3 +57,8 @@ class User(AbstractUser):
         # else:
         #     ...
         # return super().get_user_permissions(obj)
+
+    class Meta:
+        permissions = [
+            ('can_choose_user_role', 'Can choose the role of user'),
+        ]
