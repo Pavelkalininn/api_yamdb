@@ -2,9 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser  # , Permission, Group
 
 ROLE_CHOICES = (
-    'user',
-    'moderator',
-    'admin',
+    ('USER', 'user'),
+    ('MODERATOR', 'moderator'),
+    ('ADMIN', 'admin'),
 )
 
 
@@ -19,6 +19,7 @@ class User(AbstractUser):
     )
     role = models.CharField(
         'Роль',
+        max_length=16,
         choices=ROLE_CHOICES,
         default='user'
     )
@@ -28,10 +29,6 @@ class User(AbstractUser):
         if self.role == 'admin':
             return True
         return False
-
-    @property
-    def is_staff(self):
-        return self.is_admin or self.is_superuser
 
     @property
     def is_moderator(self):
