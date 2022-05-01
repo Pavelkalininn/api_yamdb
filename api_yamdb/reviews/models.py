@@ -1,5 +1,8 @@
+import jwt
+from api_yamdb.settings import SECRET_KEY
 from django.db import models
 from django.contrib.auth.models import AbstractUser  # , Permission, Group
+from django.utils.crypto import get_random_string
 
 ROLE_CHOICES = (
     ('USER', 'user'),
@@ -9,13 +12,18 @@ ROLE_CHOICES = (
 
 
 class User(AbstractUser):
+    username = models.CharField(
+        'Никнейм',
+        max_length=150,
+        unique=True
+    )
     email = models.EmailField(
         'Почта',
-        unique=True
+        unique=True,
     )
     bio = models.TextField(
         'Биография',
-        blank=True,
+        blank=True
     )
     role = models.CharField(
         'Роль',
@@ -23,6 +31,13 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default='user'
     )
+    confirmation_code = models.CharField(
+        'Код подтверждения',
+        max_length=64,
+        default=get_random_string(length=64)
+    )
+
+    REQUIRED_FIELDS = ['email']
 
     @property
     def is_admin(self):
@@ -35,6 +50,25 @@ class User(AbstractUser):
         if self.role == 'moderator':
             return True
         return False
+
+    @property
+    def token(self):
+        """
+        Позволяет получить токен пользователя путем вызова user.token
+        """
+        return self._generate_jwt_token()
+
+    def _generate_jwt_token(self):
+        """
+        Генерирует JWT-token, в котором хранится идентификатор этого
+        пользователя, срок действия токена составляет 1 день от создания
+        """
+
+        token = jwt.encode({
+            'id': self.pk,
+        }, SECRET_KEY, algorithm='HS256')
+
+        return token.decode('utf-8')
 
 
 class Genre(models.Model):

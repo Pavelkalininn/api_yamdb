@@ -3,8 +3,7 @@ from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Genre, Title, Category
-from reviews.models import GenreTitle
+from reviews.models import Genre, Title, Category, User, GenreTitle
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -31,7 +30,6 @@ class TitleSerializer(serializers.ModelSerializer):
             title = Title.objects.create(**validated_data, category=category)
             return title
         genres = validated_data.pop('genre')
-        print(genres)
 
         title = Title.objects.create(**validated_data)
         for genre_slug in genres:
@@ -56,3 +54,61 @@ class TitleSerializer(serializers.ModelSerializer):
                 fields=('name', 'year')
             )
         ]
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    confirmation_code = serializers.CharField(max_length=64, read_only=True)
+    token = serializers.CharField(max_length=255, read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'confirmation_code', 'token'
+        )
+
+    def validate_username(self, username):
+        if username == 'me':
+            raise serializers.ValidationError(
+                'Сочетание "me" нельзя использовать в качестве никнейма.'
+            )
+        return username
+
+    def create(self, validated_data):
+        user = User.objects.create(**validated_data)
+        user.email_user(
+            subject='confirmation_code',
+            message=user.confirmation_code
+        )
+        return {
+            'email': user.email,
+            'username': user.username,
+        }
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    token = serializers.CharField(max_length=255, read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'confirmation_code', 'token'
+        )
+
+    def validate(self, data):
+        username = data.get('username', None)
+        code = data.get('confirmation_code', None)
+
+        user = get_object_or_404(
+            User,
+            username=username,
+            confirmation_code=code
+        )
+
+        if not user.is_active:
+            raise serializers.ValidationError(
+                'This user has been deactivated.'
+            )
+
+        return {
+            'token': user.token
+        }
