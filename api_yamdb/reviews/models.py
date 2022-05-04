@@ -62,3 +62,28 @@ class GenreTitle(models.Model):
         Title,
         on_delete=models.CASCADE
     )
+
+
+class Review(models.Model):
+
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+
+    score = models.IntegerField()
+
+    pub_date = models.DateTimeField(
+        'Creation date',
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
