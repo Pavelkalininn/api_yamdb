@@ -122,6 +122,9 @@ class User(AbstractUser):
             return True
         return False
 
+    class Meta:
+        ordering = ['-date_joined']
+
 
 class Genre(models.Model):
     name = models.TextField(
