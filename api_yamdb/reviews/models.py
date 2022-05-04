@@ -1,14 +1,59 @@
-import jwt
-from api_yamdb.settings import SECRET_KEY
+from django.contrib.auth.base_user import BaseUserManager
+
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser  # , Permission, Group
-from django.utils.crypto import get_random_string
 
 ROLE_CHOICES = (
     ('USER', 'user'),
     ('MODERATOR', 'moderator'),
     ('ADMIN', 'admin'),
 )
+
+CODE_LENGTH = 64
+PASSWORD_LENGTH = 18
+
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, email, password='', bio='', role='user'):
+        if username is None:
+            raise TypeError('Users must have a username.')
+
+        if email is None:
+            raise TypeError('Users must have an email address.')
+
+        user = self.model(
+            username=username,
+            email=self.normalize_email(email),
+            confirmation_code=self.make_random_password(length=CODE_LENGTH),
+            password=password,
+            role=role,
+            bio=bio
+        )
+        user.save()
+        user.email_user(
+            subject='confirmation_code',
+            message=user.confirmation_code,
+            fail_silently=False
+        )
+
+        return user
+
+    def create_superuser(self, username, email, password=None):
+        if password is None:
+            raise TypeError('Superusers must have a password.')
+
+        user = self.create_user(
+            username=username,
+            email=email,
+            password=password,
+            role='admin'
+        )
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
+
+        return user
 
 
 class User(AbstractUser):
@@ -33,15 +78,19 @@ class User(AbstractUser):
     )
     confirmation_code = models.CharField(
         'Код подтверждения',
-        max_length=64,
-        default=get_random_string(length=64)
+        max_length=CODE_LENGTH
+    )
+    password = models.CharField(
+        'Пароль',
+        max_length=PASSWORD_LENGTH,
+        blank=True
     )
 
-    REQUIRED_FIELDS = ['email']
+    objects = CustomUserManager()
 
     @property
     def is_admin(self):
-        if self.role == 'admin':
+        if self.role == 'admin' or self.is_staff:
             return True
         return False
 
@@ -50,25 +99,6 @@ class User(AbstractUser):
         if self.role == 'moderator':
             return True
         return False
-
-    @property
-    def token(self):
-        """
-        Позволяет получить токен пользователя путем вызова user.token
-        """
-        return self._generate_jwt_token()
-
-    def _generate_jwt_token(self):
-        """
-        Генерирует JWT-token, в котором хранится идентификатор этого
-        пользователя, срок действия токена составляет 1 день от создания
-        """
-
-        token = jwt.encode({
-            'id': self.pk,
-        }, SECRET_KEY, algorithm='HS256')
-
-        return token.decode('utf-8')
 
 
 class Genre(models.Model):

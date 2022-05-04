@@ -2,8 +2,22 @@ import datetime
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.exceptions import NotFound
 
-from reviews.models import Genre, Title, Category, User, GenreTitle
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import AccessToken
+
+from django.contrib.auth import authenticate
+from django.utils.crypto import get_random_string
+
+from reviews.models import (
+    Genre,
+    Title,
+    Category,
+    User,
+    GenreTitle,
+    CODE_LENGTH
+)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -56,14 +70,16 @@ class TitleSerializer(serializers.ModelSerializer):
         ]
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    confirmation_code = serializers.CharField(max_length=64, read_only=True)
-    token = serializers.CharField(max_length=255, read_only=True)
+class SignUpSerializer(serializers.ModelSerializer):
+    confirmation_code = serializers.CharField(
+        max_length=CODE_LENGTH,
+        read_only=True
+    )
 
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'confirmation_code', 'token'
+            'username', 'email', 'confirmation_code'
         )
 
     def validate_username(self, username):
@@ -77,7 +93,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create(**validated_data)
         user.email_user(
             subject='confirmation_code',
-            message=user.confirmation_code
+            message=user.confirmation_code,
+            fail_silently=False
         )
         return {
             'email': user.email,
@@ -85,30 +102,50 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
 
-class LoginSerializer(serializers.ModelSerializer):
-    token = serializers.CharField(max_length=255, read_only=True)
+class TokenSerializer(serializers.ModelSerializer, TokenObtainPairSerializer):
+    # confirmation_code = serializers.CharField(max_length=64, read_only=True)
+
+    def __init__(self, instance=None, data=..., **kwargs):
+        super().__init__(instance, data, **kwargs)
+        self.fields['password'].required = False
 
     class Meta:
         model = User
-        fields = (
-            'username', 'confirmation_code', 'token'
-        )
+        fields = ('username', 'confirmation_code')
 
-    def validate(self, data):
-        username = data.get('username', None)
-        code = data.get('confirmation_code', None)
+    def validate(self, attrs):
+        authenticate_kwargs = {
+            self.username_field: attrs[self.username_field],
+            # 'confirmation_code': attrs['confirmation_code'],
+        }
+        confirm_code = None
+        try:
+            authenticate_kwargs['request'] = self.context['request']
+            confirm_code = self.context['request'].data['confirmation_code']
+        except KeyError:
+            pass
 
-        user = get_object_or_404(
-            User,
-            username=username,
-            confirmation_code=code
-        )
+        self.user = authenticate(**authenticate_kwargs)
 
-        if not user.is_active:
-            raise serializers.ValidationError(
-                'This user has been deactivated.'
+        if self.user is None:
+            raise NotFound(
+                'User does not exist.'
             )
 
+        if self.user.confirmation_code != confirm_code:
+            raise serializers.ValidationError(
+                'Invalid confirmation_code.'
+            )
+
+        access = AccessToken.for_user(self.user)
+
         return {
-            'token': user.token
+            'token': str(access)
         }
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        exclude = ('password', 'confirmation_code')

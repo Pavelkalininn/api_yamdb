@@ -6,7 +6,8 @@ from .views import (
     TitleViewSet,
     GenreViewSet,
     SignUpView,
-    LogInView,
+    TokenView,
+    UserViewSet,
 )
 
 router = routers.DefaultRouter()
@@ -14,6 +15,7 @@ router = routers.DefaultRouter()
 router.register(r'genres', GenreViewSet, basename='genre-list')
 router.register(r'titles', TitleViewSet, basename='title-list')
 router.register(r'categories', CategoryViewSet, basename='category-list')
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path(
@@ -23,8 +25,8 @@ urlpatterns = [
     ),
     path(
         'v1/auth/token/',
-        LogInView.as_view({'post': 'retrieve'}),
-        name='auth-login'
+        TokenView.as_view(),
+        name='auth-token'
     ),
     path('v1/', include(router.urls)),
 ]
