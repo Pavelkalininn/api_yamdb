@@ -1,6 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, filters, status
+from rest_framework.exceptions import NotFound, MethodNotAllowed
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -42,48 +43,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
 
 
-# class AuthView(viewsets.GenericViewSet, TokenViewBase):
-#     queryset = User.objects.all()
-#     permission_classes = (AllowAny,)
-
-#     @action(methods=['post'], detail=False)
-#     def signup(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_create(serializer)
-#         # headers = self.get_success_headers(serializer.data)
-#         return Response(
-#             serializer.data,
-#             status=status.HTTP_200_OK,
-#             # headers=headers
-#         )
-
-#     @action(methods=['post'], detail=False)
-#     def token(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid()
-#         # print(serializer)
-#         # headers = self.get_success_headers(serializer.data)
-#         return Response(
-#             serializer.data,
-#             status=status.HTTP_200_OK,
-#             # headers=headers
-#         )
-#         # serializer = self.serializer_class(data=request.data,
-#         #                                    context={'request': request})
-#         # serializer.is_valid(raise_exception=True)
-#         # user = serializer.validated_data['user']
-#         # token, created = Token.objects.get_or_create(user=user)
-#         # return Response({
-#         #     'token': token.key,
-#         #     'user_id': user.pk,
-#         #     'email': user.email
-#         # })
-
-#     def get_serializer_class(self):
-#         if self.action == 'token':
-#             return TokenSerializer
-#         return SignUpSerializer
 class SignUpView(CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
@@ -109,13 +68,48 @@ class TokenView(TokenViewBase):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # permission_classes = (AdminOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
 
-    @action(methods=['get', 'patch'], detail=True)
+    def get_object(self):
+        user_username = self.kwargs['pk']
+        try:
+            user = User.objects.get(username=user_username)
+        except User.DoesNotExist:
+            user = None
+        if user is None:
+            raise NotFound(
+                'User with this username does not exists.'
+            )
+        return user
+
+    @action(methods=['get', 'patch', 'put', 'delete'], detail=False)
     def me(self, request):
-        user = User.objects.get(username=request.user.username)
-        serializer = self.get_serializer(user)
-        return Response(serializer.data)
+        if request.method == 'GET':
+            user = User.objects.get(username=request.user.username)
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
+
+        if request.method == 'PATCH' or request.method == 'PUT':
+            partial = True if request.method == 'PATCH' else False
+            user = User.objects.get(username=request.user.username)
+            serializer = self.get_serializer(
+                user,
+                data=request.data,
+                partial=partial
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(user, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need
+                # to forcibly invalidate the prefetch cache on the instance.
+                user._prefetched_objects_cache = {}
+
+            return Response(serializer.data)
+
+        if request.method == 'DELETE':
+            raise MethodNotAllowed(method='DELETE')
 
     # def get_serializer_class(self):
     #     return super().get_serializer_class()

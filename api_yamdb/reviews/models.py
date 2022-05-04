@@ -1,13 +1,11 @@
-from django.contrib.auth.base_user import BaseUserManager
-
-from django.conf import settings
 from django.db import models
+from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser  # , Permission, Group
 
 ROLE_CHOICES = (
-    ('USER', 'user'),
-    ('MODERATOR', 'moderator'),
-    ('ADMIN', 'admin'),
+    ('user', 'USER'),
+    ('moderator', 'MODERATOR'),
+    ('admin', 'ADMIN'),
 )
 
 CODE_LENGTH = 64
@@ -15,7 +13,16 @@ PASSWORD_LENGTH = 18
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, email, password='', bio='', role='user'):
+    def create_user(
+        self,
+        username,
+        email,
+        password='',
+        bio='',
+        role='user',
+        first_name='',
+        last_name=''
+    ):
         if username is None:
             raise TypeError('Users must have a username.')
 
@@ -28,7 +35,9 @@ class CustomUserManager(BaseUserManager):
             confirmation_code=self.make_random_password(length=CODE_LENGTH),
             password=password,
             role=role,
-            bio=bio
+            bio=bio,
+            first_name=first_name,
+            last_name=last_name
         )
         user.save()
         user.email_user(
@@ -39,7 +48,16 @@ class CustomUserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, username, email, password=None):
+    def create_superuser(
+        self,
+        username,
+        email,
+        password=None,
+        bio='',
+        role='admin',
+        first_name='',
+        last_name=''
+    ):
         if password is None:
             raise TypeError('Superusers must have a password.')
 
@@ -47,7 +65,10 @@ class CustomUserManager(BaseUserManager):
             username=username,
             email=email,
             password=password,
-            role='admin'
+            role=role,
+            bio=bio,
+            first_name=first_name,
+            last_name=last_name
         )
         user.is_superuser = True
         user.is_staff = True
@@ -60,7 +81,8 @@ class User(AbstractUser):
     username = models.CharField(
         'Никнейм',
         max_length=150,
-        unique=True
+        unique=True,
+        primary_key=True
     )
     email = models.EmailField(
         'Почта',
@@ -90,7 +112,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        if self.role == 'admin' or self.is_staff:
+        if self.role == 'admin' or self.is_staff or self.is_superuser:
             return True
         return False
 

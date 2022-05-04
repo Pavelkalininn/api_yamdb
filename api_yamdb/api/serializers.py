@@ -102,7 +102,6 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.ModelSerializer, TokenObtainPairSerializer):
-    # confirmation_code = serializers.CharField(max_length=64, read_only=True)
 
     def __init__(self, instance=None, data=..., **kwargs):
         super().__init__(instance, data, **kwargs)
@@ -115,7 +114,6 @@ class TokenSerializer(serializers.ModelSerializer, TokenObtainPairSerializer):
     def validate(self, attrs):
         authenticate_kwargs = {
             self.username_field: attrs[self.username_field],
-            # 'confirmation_code': attrs['confirmation_code'],
         }
         confirm_code = None
         try:
@@ -147,4 +145,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        exclude = ('password', 'confirmation_code')
+        fields = (
+            'username', 'email', 'first_name', 'last_name',
+            'bio', 'role'
+        )
