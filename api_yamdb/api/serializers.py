@@ -1,10 +1,9 @@
 import datetime
+
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueTogetherValidator
-
-from reviews.models import Genre, Title, Category
-from reviews.models import GenreTitle
+from reviews.models import Category, Genre, GenreTitle, Review, Title
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -56,3 +55,18 @@ class TitleSerializer(serializers.ModelSerializer):
                 fields=('name', 'year')
             )
         ]
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+    pub_date = serializers.DateTimeField(
+        read_only=True,
+        source='pub_date'
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Review

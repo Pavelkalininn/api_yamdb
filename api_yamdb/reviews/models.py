@@ -1,4 +1,24 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+ROLES = [
+    ('admin', 'Admin'),
+    ('anon', 'Anonymous'),
+    ('user', 'User'),
+    ('moderator', 'Moderator'),
+]
+
+
+class User(AbstractUser):
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+    role = models.CharField(
+        choices=ROLES,
+        max_length=100,
+        default='anon'
+    )
 
 
 class Genre(models.Model):
@@ -65,7 +85,6 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
-
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -74,16 +93,16 @@ class Review(models.Model):
 
     author = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
-        related_name='reviews'
+        on_delete=models.CASCADE
     )
 
     score = models.IntegerField()
 
     pub_date = models.DateTimeField(
-        'Creation date',
+        'Дата создания',
         auto_now_add=True
     )
 
-    class Meta:
-        ordering = ['-pub_date']
+    text = models.TextField(
+        'Текст поста',
+    )
