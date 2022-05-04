@@ -9,7 +9,6 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenViewBase
 
 from reviews.models import Title, Genre, Category, User
-from core.custom_authentication import AuthenticationWithoutPassword
 
 from .serializers import (
     GenreSerializer,
@@ -104,7 +103,6 @@ class SignUpView(CreateModelMixin, viewsets.GenericViewSet):
 
 class TokenView(TokenViewBase):
     permission_classes = (AllowAny,)
-    # authentication_classes = (AuthenticationWithoutPassword,)
     serializer_class = TokenSerializer
 
 

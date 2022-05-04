@@ -8,7 +8,6 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 
 from django.contrib.auth import authenticate
-from django.utils.crypto import get_random_string
 
 from reviews.models import (
     Genre,
