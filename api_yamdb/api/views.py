@@ -93,9 +93,11 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'PATCH' or request.method == 'PUT':
             partial = True if request.method == 'PATCH' else False
             user = User.objects.get(username=request.user.username)
+            data = request.data.copy()
+            data['role'] = user.role
             serializer = self.get_serializer(
                 user,
-                data=request.data,
+                data=data,
                 partial=partial
             )
             serializer.is_valid(raise_exception=True)
@@ -110,9 +112,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.method == 'DELETE':
             raise MethodNotAllowed(method='DELETE')
-
-    # def get_serializer_class(self):
-    #     return super().get_serializer_class()
 
     def get_permissions(self):
         if self.action == 'me':
