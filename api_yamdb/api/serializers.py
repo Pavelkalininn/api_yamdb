@@ -35,6 +35,9 @@ class CategorySerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, required=False)
     category = CategorySerializer(required=True)
+    description = serializers.CharField(
+        required=False
+    )
 
     def validate_year(self, year):
         if (1000 > year
@@ -43,7 +46,7 @@ class TitleSerializer(serializers.ModelSerializer):
         return year
 
     class Meta:
-        fields = ['id', 'name', 'year', 'category', 'genre']
+        fields = ['id', 'name', 'year', 'category', 'genre', 'description']
         model = Title
 
 
@@ -61,7 +64,7 @@ class TitlePutSerializer(TitleSerializer):
     )
 
     class Meta:
-        fields = ['id', 'name', 'year', 'category', 'genre']
+        fields = ['id', 'name', 'year', 'category', 'genre', 'description']
         model = Title
         validators = [
             UniqueTogetherValidator(
