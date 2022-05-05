@@ -36,27 +36,29 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, required=False)
     category = CategorySerializer(required=True)
 
-    def create(self, validated_data):
-        category_slug = validated_data.pop('category')
-        category = get_object_or_404(Category, slug=category_slug)
-        if 'genre' not in self.initial_data:
-            title = Title.objects.create(**validated_data, category=category)
-            return title
-        genres = validated_data.pop('genre')
-
-        title = Title.objects.create(**validated_data)
-        for genre_slug in genres:
-            current_genre = get_object_or_404(Genre, slug=genre_slug)
-            GenreTitle.objects.create(
-                genre=current_genre, title=title)
-        title.save(category=category)
-        return title
-
     def validate_year(self, year):
         if (1000 > year
                 or year > datetime.datetime.now().year):
             raise serializers.ValidationError('Некорректно введен год')
         return year
+
+    class Meta:
+        fields = ['id', 'name', 'year', 'category', 'genre']
+        model = Title
+
+
+class TitlePutSerializer(TitleSerializer):
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        many=True,
+        required=False,
+        slug_field='slug'
+    )
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        required=True,
+        slug_field='slug'
+    )
 
     class Meta:
         fields = ['id', 'name', 'year', 'category', 'genre']
