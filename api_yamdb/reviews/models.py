@@ -168,6 +168,13 @@ class Title(models.Model):
         verbose_name='Категория'
     )
     genre = models.ManyToManyField(Genre, through='GenreTitle')
+    description = models.TextField(
+        'Описание',
+        help_text='Введите описание',
+        null=True,
+        blank=True
+
+    )
 
     class Meta:
         ordering = ['-year']

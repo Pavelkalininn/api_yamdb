@@ -29,6 +29,9 @@ class CategorySerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, required=False)
     category = CategorySerializer(required=True)
+    description = serializers.CharField(
+        required=False
+    )
     rating = serializers.SerializerMethodField()
 
     def validate_year(self, year):
@@ -38,7 +41,7 @@ class TitleSerializer(serializers.ModelSerializer):
         return year
 
     class Meta:
-        fields = ['id', 'name', 'year', 'category', 'genre', 'rating']
+        fields = ['id', 'name', 'year', 'category', 'genre', 'rating', 'description']
         model = Title
 
     def get_rating(self, obj):
@@ -60,7 +63,7 @@ class TitlePutSerializer(TitleSerializer):
     )
 
     class Meta:
-        fields = ['id', 'name', 'year', 'category', 'genre']
+        fields = ['id', 'name', 'year', 'category', 'genre', 'description']
         model = Title
         validators = [
             UniqueTogetherValidator(
