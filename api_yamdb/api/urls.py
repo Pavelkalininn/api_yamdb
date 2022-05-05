@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework import routers
 
 from .views import (
@@ -8,6 +8,7 @@ from .views import (
     SignUpView,
     TokenView,
     UserViewSet,
+    ReviewViewSet,
 )
 
 router = routers.DefaultRouter()
@@ -16,6 +17,12 @@ router.register(r'genres', GenreViewSet, basename='genre-list')
 router.register(r'titles', TitleViewSet, basename='title-list')
 router.register(r'categories', CategoryViewSet, basename='category-list')
 router.register(r'users', UserViewSet)
+
+router.register(
+    r'titles/?P<title_id>\d+/reviews',
+    ReviewViewSet,
+    basename='review-list'
+)
 
 urlpatterns = [
     path(

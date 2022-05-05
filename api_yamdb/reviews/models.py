@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -125,6 +126,25 @@ class User(AbstractUser):
     class Meta:
         ordering = ['-date_joined']
 
+ROLES = [
+    ('admin', 'Admin'),
+    ('anon', 'Anonymous'),
+    ('user', 'User'),
+    ('moderator', 'Moderator'),
+]
+
+
+class User(AbstractUser):
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+    role = models.CharField(
+        choices=ROLES,
+        max_length=100,
+        default='anon'
+    )
+
 
 class Genre(models.Model):
     name = models.TextField(
@@ -186,4 +206,28 @@ class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE
+    )
+
+
+class Review(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    score = models.IntegerField()
+
+    pub_date = models.DateTimeField(
+        'Дата создания',
+        auto_now_add=True
+    )
+
+    text = models.TextField(
+        'Текст поста',
     )

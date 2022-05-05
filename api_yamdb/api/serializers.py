@@ -1,12 +1,11 @@
 import datetime
+
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.exceptions import NotFound
-
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import AccessToken
-
 from django.contrib.auth import authenticate
 
 from reviews.models import (
@@ -15,6 +14,7 @@ from reviews.models import (
     Category,
     User,
     GenreTitle,
+    Review,
     CODE_LENGTH
 )
 
@@ -69,6 +69,21 @@ class TitleSerializer(serializers.ModelSerializer):
         ]
 
 
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+    pub_date = serializers.DateTimeField(
+        read_only=True,
+        source='pub_date'
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Review
+
+        
 class SignUpSerializer(serializers.ModelSerializer):
     confirmation_code = serializers.CharField(
         max_length=CODE_LENGTH,
