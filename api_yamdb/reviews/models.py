@@ -126,25 +126,6 @@ class User(AbstractUser):
     class Meta:
         ordering = ['-date_joined']
 
-ROLES = [
-    ('admin', 'Admin'),
-    ('anon', 'Anonymous'),
-    ('user', 'User'),
-    ('moderator', 'Moderator'),
-]
-
-
-class User(AbstractUser):
-    bio = models.TextField(
-        'Биография',
-        blank=True,
-    )
-    role = models.CharField(
-        choices=ROLES,
-        max_length=100,
-        default='anon'
-    )
-
 
 class Genre(models.Model):
     name = models.TextField(
