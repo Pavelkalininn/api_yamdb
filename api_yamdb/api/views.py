@@ -16,7 +16,7 @@ from .serializers import (
     SignUpSerializer,
     TokenSerializer,
     ReviewSerializer,
-    UserSerializer
+    UserSerializer, TitlePutSerializer
 )
 from .permissions import AdminOrReadOnly, AdminOnly
 
@@ -25,6 +25,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [AdminOrReadOnly, ]
+    filter_backends = [filters.SearchFilter, ]
     search_fields = ('name',)
 
 
@@ -32,14 +33,20 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [AdminOrReadOnly, ]
+    filter_backends = [filters.SearchFilter, ]
     search_fields = ('name',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
     permission_classes = [AdminOrReadOnly, ]
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleSerializer
+        else:
+            return TitlePutSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
