@@ -1,22 +1,16 @@
 import datetime
 
+from django.contrib.auth import authenticate
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
-from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.exceptions import NotFound
+from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import AccessToken
-from django.contrib.auth import authenticate
-
-from reviews.models import (
-    Genre,
-    Title,
-    Category,
-    User,
-    GenreTitle,
-    Review,
-    CODE_LENGTH
-)
+from reviews.models import (CODE_LENGTH, Category, Comment, Genre, Review,
+                            Title, User)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -38,6 +32,7 @@ class TitleSerializer(serializers.ModelSerializer):
     description = serializers.CharField(
         required=False
     )
+    rating = serializers.SerializerMethodField()
 
     def validate_year(self, year):
         if (1000 > year
@@ -46,8 +41,12 @@ class TitleSerializer(serializers.ModelSerializer):
         return year
 
     class Meta:
-        fields = ['id', 'name', 'year', 'category', 'genre', 'description']
+        fields = ['id', 'name', 'year', 'category', 'genre', 'rating', 'description']
         model = Title
+
+    def get_rating(self, obj):
+        rating = obj.reviews.aggregate(score=Avg('score'))
+        return rating.get('score')
 
 
 class TitlePutSerializer(TitleSerializer):
@@ -77,18 +76,51 @@ class TitlePutSerializer(TitleSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='username'
+        slug_field='username',
+        default=serializers.CurrentUserDefault()
     )
     pub_date = serializers.DateTimeField(
         read_only=True,
-        source='pub_date'
     )
 
     class Meta:
-        fields = '__all__'
+        fields = ['id', 'text', 'author', 'score', 'pub_date']
+        read_only_fields = ['id', 'author', 'pub_date']
         model = Review
 
-        
+    def validate_score(self, value):
+        if value not in range(1, 11) :
+            raise serializers.ValidationError(
+                'Оцените цифрой от 1 до 10'
+            )
+        return value
+
+    def validate(self, obj):
+        title_id = self.context['view'].kwargs.get('title_id')
+        author = self.context.get('request').user
+        title = get_object_or_404(Title, id=title_id)
+        if self.context.get('request').method != 'PATCH':
+            if title.reviews.filter(author=author).exists():
+                raise serializers.ValidationError(
+                    'Ваш отзыв уже есть.'
+                )
+        return obj
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
+    pub_date = serializers.DateTimeField()
+
+    class Meta:
+        fields = ['id', 'text', 'author', 'pub_date']
+        read_only_fields = ['id', 'author', 'pub_date']
+        model = Comment
+
+
 class SignUpSerializer(serializers.ModelSerializer):
     confirmation_code = serializers.CharField(
         max_length=CODE_LENGTH,

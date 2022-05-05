@@ -1,7 +1,6 @@
-from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 ROLE_CHOICES = (
     ('user', 'USER'),
@@ -219,3 +218,36 @@ class Review(models.Model):
     text = models.TextField(
         'Текст поста',
     )
+
+    class Meta:
+        ordering = ['-pub_date']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review'),
+        ]
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+
+    text = models.TextField(
+        'Текст поста',
+    )
+
+    pub_date = models.DateTimeField(
+        'Дата создания',
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
