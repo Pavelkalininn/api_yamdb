@@ -3,12 +3,12 @@ import datetime
 from django.contrib.auth import authenticate
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import AccessToken
+
 from reviews.models import (CODE_LENGTH, Category, Comment, Genre, Review,
                             Title, User)
 
@@ -41,7 +41,8 @@ class TitleSerializer(serializers.ModelSerializer):
         return year
 
     class Meta:
-        fields = ['id', 'name', 'year', 'category', 'genre', 'rating', 'description']
+        fields = [
+            'id', 'name', 'year', 'category', 'genre', 'rating', 'description']
         model = Title
 
     def get_rating(self, obj):
