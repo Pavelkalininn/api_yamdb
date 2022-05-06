@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
@@ -8,8 +7,9 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
-from reviews.models import Category, Comment, Genre, Review, Title, User
 
+from reviews.models import Category, Comment, Genre, Review, Title, User
+from .filters import TitleFilter
 from .permissions import AdminOnly, AdminOrReadOnly, AuthorOrHasRoleOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, SignUpSerializer,
@@ -22,7 +22,25 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = [AdminOrReadOnly, ]
     filter_backends = [filters.SearchFilter, ]
+    lookup_value_regex = r'[\w.]+'
     search_fields = ('name',)
+
+    def retrieve(self, request, *args, **kwargs):
+        if self.kwargs.get('pk').isnumeric():
+            super().retrieve(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = get_object_or_404(Genre, slug=self.kwargs.get('pk'))
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        if self.kwargs.get('pk').isnumeric():
+            super().update(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -30,13 +48,33 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AdminOrReadOnly, ]
     filter_backends = [filters.SearchFilter, ]
+    lookup_value_regex = r'[\w.]+'
     search_fields = ('name',)
+
+    def retrieve(self, request, *args, **kwargs):
+        if self.kwargs.get('pk').isnumeric():
+            super().retrieve(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = get_object_or_404(Category, slug=self.kwargs.get('pk'))
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        if self.kwargs.get('pk').isnumeric():
+            super().update(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = [AdminOrReadOnly, ]
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
+    filterset_fields = ('genre', 'category', 'year', 'name')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
