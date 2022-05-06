@@ -85,7 +85,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ['id', 'text', 'author', 'score', 'pub_date']
-        read_only_fields = ['id', 'author', 'pub_date']
         model = Review
 
     def validate_score(self, value):
@@ -113,11 +112,12 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='username',
         default=serializers.CurrentUserDefault()
     )
-    pub_date = serializers.DateTimeField()
+    pub_date = serializers.DateTimeField(
+        read_only=True
+    )
 
     class Meta:
         fields = ['id', 'text', 'author', 'pub_date']
-        read_only_fields = ['id', 'author', 'pub_date']
         model = Comment
 
 
