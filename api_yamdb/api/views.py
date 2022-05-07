@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, status, viewsets
@@ -10,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
 
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
 from .permissions import AdminOnly, AdminOrReadOnly, AuthorOrHasRoleOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -109,7 +108,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             id=review_id,
             title=title
         )
-        return Comment.objects.filter(review=review)
+        return review.comments.all()
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
