@@ -26,10 +26,9 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
-        if self.kwargs.get('pk').isnumeric():
-            super().retrieve(request, *args, **kwargs)
-        else:
+        if not self.kwargs.get('pk').isnumeric():
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        super().retrieve(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = get_object_or_404(Genre, slug=self.kwargs.get('pk'))
@@ -38,9 +37,8 @@ class GenreViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         if self.kwargs.get('pk').isnumeric():
-            super().update(request, *args, **kwargs)
-        else:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        super().update(request, *args, **kwargs)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -52,10 +50,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
-        if self.kwargs.get('pk').isnumeric():
-            super().retrieve(request, *args, **kwargs)
-        else:
+        if not self.kwargs.get('pk').isnumeric():
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        super().retrieve(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = get_object_or_404(Category, slug=self.kwargs.get('pk'))
@@ -63,10 +60,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
-        if self.kwargs.get('pk').isnumeric():
-            super().update(request, *args, **kwargs)
-        else:
+        if not self.kwargs.get('pk').isnumeric():
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        super().update(request, *args, **kwargs)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -79,8 +75,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return TitleSerializer
-        else:
-            return TitlePutSerializer
+        return TitlePutSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

@@ -34,16 +34,15 @@ class TitleSerializer(serializers.ModelSerializer):
     )
     rating = serializers.SerializerMethodField()
 
+    class Meta:
+        fields = '__all__'
+        model = Title
+
     def validate_year(self, year):
         if (1000 > year
                 or year > datetime.datetime.now().year):
             raise serializers.ValidationError('Некорректно введен год')
         return year
-
-    class Meta:
-        fields = [
-            'id', 'name', 'year', 'category', 'genre', 'rating', 'description']
-        model = Title
 
     def get_rating(self, obj):
         rating = obj.reviews.aggregate(score=Avg('score'))
@@ -85,7 +84,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ['id', 'text', 'author', 'score', 'pub_date']
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
 
     def validate_score(self, value):
@@ -118,7 +117,7 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ['id', 'text', 'author', 'pub_date']
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
 
 
