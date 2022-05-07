@@ -78,12 +78,6 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    username = models.CharField(
-        'Никнейм',
-        max_length=150,
-        unique=True,
-        primary_key=True
-    )
     email = models.EmailField(
         'Почта',
         unique=True,
@@ -101,11 +95,6 @@ class User(AbstractUser):
     confirmation_code = models.CharField(
         'Код подтверждения',
         max_length=CODE_LENGTH
-    )
-    password = models.CharField(
-        'Пароль',
-        max_length=PASSWORD_LENGTH,
-        blank=True
     )
 
     objects = CustomUserManager()

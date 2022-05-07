@@ -116,11 +116,9 @@ class TokenSerializer(serializers.ModelSerializer, TokenObtainPairSerializer):
             self.username_field: attrs[self.username_field],
         }
         confirm_code = None
-        try:
+        if 'request' in self.context:
             authenticate_kwargs['request'] = self.context['request']
             confirm_code = self.context['request'].data['confirmation_code']
-        except KeyError:
-            pass
 
         self.user = authenticate(**authenticate_kwargs)
 
