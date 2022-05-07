@@ -36,7 +36,7 @@ class GenreViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
-        if self.kwargs.get('pk').isnumeric():
+        if not self.kwargs.get('pk').isnumeric():
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         super().update(request, *args, **kwargs)
 
