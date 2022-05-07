@@ -157,6 +157,13 @@ class Title(models.Model):
         verbose_name='Категория'
     )
     genre = models.ManyToManyField(Genre, through='GenreTitle')
+    description = models.TextField(
+        'Описание',
+        help_text='Введите описание',
+        null=True,
+        blank=True
+
+    )
 
     class Meta:
         ordering = ['-year']
@@ -176,3 +183,60 @@ class GenreTitle(models.Model):
         Title,
         on_delete=models.CASCADE
     )
+
+
+class Review(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    score = models.IntegerField()
+
+    pub_date = models.DateTimeField(
+        'Дата создания',
+        auto_now_add=True
+    )
+
+    text = models.TextField(
+        'Текст поста',
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review'),
+        ]
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+
+    text = models.TextField(
+        'Текст поста',
+    )
+
+    pub_date = models.DateTimeField(
+        'Дата создания',
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
