@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import filters, status, viewsets
+from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.generics import get_object_or_404
 from rest_framework.decorators import action
-from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -148,14 +150,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_object(self):
         user_username = self.kwargs['pk']
-        try:
-            user = User.objects.get(username=user_username)
-        except User.DoesNotExist:
-            user = None
-        if user is None:
-            raise NotFound(
-                'User with this username does not exists.'
-            )
+        user = get_object_or_404(User, username=user_username)
         return user
 
     @action(methods=['get', 'patch', 'put', 'delete'], detail=False)
@@ -179,8 +174,6 @@ class UserViewSet(viewsets.ModelViewSet):
             self.perform_update(serializer)
 
             if getattr(user, '_prefetched_objects_cache', None):
-                # If 'prefetch_related' has been applied to a queryset, we need
-                # to forcibly invalidate the prefetch cache on the instance.
                 user._prefetched_objects_cache = {}
 
             return Response(serializer.data)

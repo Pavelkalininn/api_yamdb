@@ -1,6 +1,7 @@
+from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+from django.contrib.auth.hashers import make_password
 
 ROLE_CHOICES = (
     ('user', 'USER'),
@@ -64,7 +65,7 @@ class CustomUserManager(BaseUserManager):
         user = self.create_user(
             username=username,
             email=email,
-            password=password,
+            password=make_password(password),
             role=role,
             bio=bio,
             first_name=first_name,
@@ -78,14 +79,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    username = models.CharField(
-        'Никнейм',
-        max_length=150,
-        unique=True,
-        primary_key=True
-    )
     email = models.EmailField(
-        'Почта',
         unique=True,
     )
     bio = models.TextField(
@@ -101,11 +95,6 @@ class User(AbstractUser):
     confirmation_code = models.CharField(
         'Код подтверждения',
         max_length=CODE_LENGTH
-    )
-    password = models.CharField(
-        'Пароль',
-        max_length=PASSWORD_LENGTH,
-        blank=True
     )
 
     objects = CustomUserManager()
