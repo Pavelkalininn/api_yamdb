@@ -63,7 +63,7 @@ class TitlePutSerializer(TitleSerializer):
     )
 
     class Meta:
-        fields = ['id', 'name', 'year', 'category', 'genre', 'description']
+        fields = ('id', 'name', 'year', 'category', 'genre', 'description')
         model = Title
         validators = [
             UniqueTogetherValidator(
@@ -129,9 +129,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            'username', 'email', 'confirmation_code'
-        )
+        fields = ('username', 'email', 'confirmation_code')
 
     def validate_username(self, username):
         if username == 'me':
