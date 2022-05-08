@@ -99,20 +99,16 @@ class User(AbstractUser):
 
     objects = CustomUserManager()
 
+    class Meta:
+        ordering = ['-date_joined']
+
     @property
     def is_admin(self):
-        if self.role == 'admin' or self.is_staff or self.is_superuser:
-            return True
-        return False
+        return self.role == 'admin' or self.is_staff or self.is_superuser
 
     @property
     def is_moderator(self):
-        if self.role == 'moderator':
-            return True
-        return False
-
-    class Meta:
-        ordering = ['-date_joined']
+        return self.role == 'moderator'
 
 
 class Genre(models.Model):
@@ -197,7 +193,7 @@ class Review(models.Model):
         on_delete=models.CASCADE
     )
 
-    score = models.IntegerField()
+    score = models.PositiveSmallIntegerField()
 
     pub_date = models.DateTimeField(
         'Дата создания',
