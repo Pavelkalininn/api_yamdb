@@ -1,14 +1,14 @@
-# Проект YaMDb
+# YaMDb project
 
-«Отзывы на произведения»
+«Composition reviews»
 
-## Описание
+## Description
 
-Проект собирает отзывы пользователей на произведения. Произведения делятся на категории книги, фильмы и музыка.
+The project collects user reviews of the works. The works are divided into categories of books, films and music.
 
-## Технологии
+## Technologies
 
-    Python 3.7.9
+    Python==3.7.9
     requests==2.26.0
     django==2.2.16
     djangorestframework==3.12.4
@@ -19,70 +19,70 @@
     pytest-pythonpath==0.7.3
     django-filter~=21.1
 
-## Запуск проекта в dev-режиме
+## Dev-mode running
 
-Установите зависимости из файла requirements.txt
+Install dependencies from the file requirements.txt
 
     pip install -r requirements.txt
 
-В папке с файлом manage.py выполните команду:
+In the file folder manage.py run the command:
 
     python manage.py runserver
 
-## Документация с примерами запросов доступна по адресу:
+## Documentation with sample requests is available at:
 
     http://127.0.0.1:8000/redoc/
 
-## Самостоятельная регистрация новых пользователей:
+## Self-registration of new users:
 
-Пользователь отправляет POST-запрос с параметрами email  и username на эндпоинт
+The user sends a POST request with the email and username parameters to the endpoint
    
     /api/v1/auth/signup/
 
-Сервис отправляет письмо с кодом подтверждения на указанный адрес.
+The service sends an email with a confirmation code to the specified address.
 
-Пользователь отправляет POST-запрос с параметрами username и confirmation_code на эндпоинт
+The user sends a POST request with the username and confirmation_code parameters to the endpoint
 
     /api/v1/auth/token/
 
-В ответ на запрос приходит токен, который необходимо передавать в заголовке всех запросов с параметром Bearer
+In response to the request, a token is received, which must be passed in the header of all requests with the Bearer parameter
 
-После регистрации и получения токена пользователь может отправить PATCH-запрос на эндпоинт
+After registering and receiving the token, the user can send a PATCH request to the endpoint
     
     /api/v1/users/me/ 
 
-и заполнить поля в своём профайле
+and fill in the fields in your profile
 
-## Создание пользователя администратором
+## Creating a user by an administrator
 
-Пользователя может создать администратор — через админ-зону сайта или через POST-запрос на специальный эндпоинт 
+The user can be created by the administrator — through the admin zone of the site or through a POST request for a special endpoint
 
     api/v1/users/
 
-(описание полей запроса для этого случая — в документации). В этот момент письмо с кодом подтверждения пользователю отправлять не нужно.
-После этого пользователь должен самостоятельно отправить свой email и username на эндпоинт
+(the description of the request fields for this case is in the documentation). At this point, the user does not need to send an email with a confirmation code.
+After that, the user must independently send his email and username to the endpoint
 
     /api/v1/auth/signup/
 
-в ответ ему должно прийти письмо с кодом подтверждения.
-Далее пользователь отправляет POST-запрос с параметрами username и confirmation_code на эндпоинт 
+in response, he should receive an email with a confirmation code.
+Next, the user sends a POST request with the username and confirmation_code parameters to the endpoint
 
     /api/v1/auth/token/
 
-в ответе на запрос ему приходит token (JWT-токен), как и при самостоятельной регистрации.
+in response to the request, he receives a token (JWT token), as with self-registration.
 
-## Примеры запросов
+## Request examples
 
 
-Сам API доступен по адресу
+The API is available at URL
 
     GET..../api/v1/
 
-Примеры запросов к API:
+API request parameters:
 
-Пример POST-запроса с токеном Администратора (Добавлять и вносить изменения в категории может только администратор, чтение доступно любому незарегистрированному пользователю): 
+Example of a POST request with an Administrator token (Only an administrator can add and make changes to categories, reading is available to any unregistered user): 
 
-Добавление новой категории:
+Adding a new category:
 
     POST .../api/v1/categories/
 
@@ -91,16 +91,16 @@
         "slug": "string"
     }
 
-Ответ:
+Answer:
     
     {
         "name": "string",
         "slug": "string"
     }
 
-Пример POST-запроса с токеном Администратора (Добавлять и вносить изменения в жанры может только администратор, чтение доступно любому незарегистрированному пользователю): 
+Example of a POST request with an Administrator token (Only an administrator can add and make changes to genres, reading is available to any unregistered user):
 
-Добавление жанра:
+Genre adding:
 
     POST .../api/v1/genres/
 
@@ -109,16 +109,16 @@
         "slug": "string"
     }
 
-Ответ:
+Answer:
 
     {
         "name": "string",
         "slug": "string"
     }
 
-Пример POST-запроса с токеном Администратора (Добавлять и вносить изменения в произведения может только администратор, чтение доступно любому незарегистрированному пользователю): 
+Example of a POST request with an Administrator token (Only an administrator can add and make changes to works, reading is available to any unregistered user):
 
-Добавление произведения:
+Adding a work:
 
     POST .../api/v1/titles/
 
@@ -133,7 +133,7 @@
         "category": "string"
     }
 
-Ответ:
+Answer:
 
     {
         "id": 0,
@@ -156,15 +156,15 @@
     }
 
 
-Пример GET-запроса незарегистрированного пользователя (без токена):
+Example of an unregistered user's GET request (without a token):
 
-Получаем список всех произведений/жанров/категорий по 5 на странице.
+We get a list of all the works /genres/ categories of 5 on the page.
 
     GET .../api/v1/titles/
     GET .../api/v1/genres/
     GET .../api/v1/categories/
 
-Ответ (для произведений):
+Answer (for compositions):
 
     [
         {
@@ -199,4 +199,4 @@
     
 
 
-Авторы __Паша Калинин__, __Марина Бузина__, __Виталий Осташов__
+Authors __Pavel Kalinin__, __Marina Buzina__, __Vitaly Ostashov__
